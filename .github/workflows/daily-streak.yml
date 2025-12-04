@@ -1,0 +1,42 @@
+name: Daily Streak Commit
+
+on:
+  schedule:
+    - cron: '30 0 * * *'   # 6:00 AM IST (00:30 UTC)
+    - cron: '30 7 * * *'   # 1:00 PM IST (07:30 UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  commit-streak:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "jijog-jijog"
+          git config --global user.email "jijo.cs22@stellamaryscoe.edu.in"
+
+      - name: Update streak.txt with IST timestamp
+        run: |
+          TIMESTAMP=$(TZ=Asia/Kolkata date +"%Y-%m-%d %H:%M:%S IST")
+          echo "$TIMESTAMP" >> streak.txt
+
+      - name: Commit and push changes
+        run: |
+          git add streak.txt
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            echo "todays commit done sucessfully" > commit_msg.txt
+            echo "" >> commit_msg.txt
+            echo "Co-authored-by: jijog-jijog <jijo.cs22@stellamaryscoe.edu.in>" >> commit_msg.txt
+            git commit -F commit_msg.txt
+            git push
+          fi
